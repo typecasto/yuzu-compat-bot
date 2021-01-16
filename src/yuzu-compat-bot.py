@@ -1,11 +1,12 @@
 import json
+import sys
 from discord.ext import commands
 import discord
 from rich import traceback
 from rich.console import Console
 console = Console()
 # traceback.install(console=console, extra_lines=5, word_wrap=True, show_locals=True)
-list_json_filename = "games.json"
+database_location = "games.json"
 
 bot = commands.Bot(command_prefix=">")
 list_channels: list[discord.TextChannel] = []
@@ -51,7 +52,6 @@ class JsonFile(object):
         if self.file.writable():
             json.dump(self.obj, self.file)
         self.file.close()
-
 @bot.event
 async def on_ready():
     for c_guild in bot.guilds:
@@ -68,14 +68,24 @@ async def on_ready():
 async def on_error(error, *args, **kwargs):
     console.log(traceback.Traceback())
 
+@bot.event
+async def on_command_error(ctx, exception):
+    console.log(traceback.Traceback(trace=exception))
+
 
 @bot.command()
-async def add_game(ctx: commands.Context, *game: str):
-    with open(list_json_filename) as file:
-        games = json.load(file)
-
-        json.dump(games, file)
-    pass
+async def sparse_game(ctx: commands.Context, gamename):
+    with JsonFile(database_location, "w") as games:
+        games.append({
+            "name": gamename,
+            "functional": [],
+            "broken": [],
+            "crashes": [],
+            "recommendedsettings": [],
+            "notes": [],
+        })
+    console.log(f"Added game {gamename}", style="blue")
+    sync(ctx)
 
 # Checks the channels and makes any needed adjustments.
 
@@ -84,8 +94,6 @@ async def add_game(ctx: commands.Context, *game: str):
 async def sync(ctx: commands.Context):
     for channel in list_channels:
         console.log(f"Syncing channel in <{channel.guild}>.", style="green")
-
-    pass
 
 # Clear the channels and re-do the messages. Restrict to administrators.
 
