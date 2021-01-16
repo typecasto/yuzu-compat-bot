@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "yuzu-compat-bot"
+version = "0.1.0"
+description = "A discord bot to maintain a list of games compatible with yuzu."
+authors = ["Larson Ashcroft <larsona@outlook.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+"discord.py" = "^1.6.0"
+rich = "^9.8.2"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.5.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
