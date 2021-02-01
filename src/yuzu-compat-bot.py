@@ -1,9 +1,11 @@
 import json
 from typing import Optional
+from discord.enums import Status
 from discord.ext import commands
 import discord
 from discord.ext.commands.cooldowns import BucketType
-from rich import traceback
+from discord.ext.commands.errors import BadArgument, MissingRequiredArgument
+from rich import traceback, inspect
 from rich.console import Console
 from inspect import cleandoc as multiline
 
@@ -73,52 +75,10 @@ def convert_game_dict_to_message(game: dict, number: int):
 {notes}```"""
     return message
 
-
-def convert_game_dict_to_message_old(game: dict, number: int):
-    message = "---------------------------------\n"
-    message += f"`{number}. {game['name']}`\n"
-    message += "\n**__Functional__**: \n"
-    found = False
-    for line in game["functional"]:
-        message += line + "\n"
-        found = True
-    if not found:
-        message += "None\n"
-    message += "\n**__Broken__**: \n"
-    found = False
-    for line in game["broken"]:
-        message += line + "\n"
-        found = True
-    if not found:
-        message += "None\n"
-    message += "\n**__Crashes__**: \n"
-    found = False
-    for line in game["crashes"]:
-        message += line + "\n"
-        found = True
-    if not found:
-        message += "None\n"
-    message += "\n**__Recommended Settings__**: \n"
-    found = False
-    for line in game["recommendedsettings"]:
-        message += line + "\n"
-        found = True
-    if not found:
-        message += "None\n"
-    message += "\n**__Notes__**: \n"
-    found = False
-    for line in game["notes"]:
-        message += line + "\n"
-        found = True
-    if not found:
-        message += "None\n"
-    # message += "---------------------------------"
-    return message
-
 # Custom context manager to open a json file for writing
 
 
-class JsonFile(object):
+class JsonFile:
     def __init__(self, file_name, mode="r+", encoding="utf8"):
         self.file = open(file_name, mode=mode, encoding=encoding)
         self.obj = json.load(self.file, )
@@ -161,14 +121,40 @@ async def on_error(error, *args, **kwargs):
     console.log(traceback.Traceback())
 
 
+@bot.event
+async def on_command_error(ctx: commands.Context, error):
+    if type(error) == MissingRequiredArgument:
+        error: MissingRequiredArgument
+        message = "You're missing a required parameter.\n"
+        message += f"Run `>help {ctx.command.name}` for more details on command usage.\n\n"
+        message += "More information:\n"
+        message += f"Parameter: `{error.param}`\n"
+        message += f"Raw error: `{error}`"
+        await ctx.send(message)
+    else:
+        message = "An error occurred.\n"
+        message += f"Run `>help` for instructions.\n\n"
+        message += "More information:\n"
+        message += f"Error type: `{type(error)}`\n"
+        message += f"Raw error: `{error}`"
+        await ctx.send(message)
+
+
 @bot.check(db_access)
 @bot.command()
-async def edit(ctx: commands.Context, game_number: int, category: str, edit_num: int, *, text: str):
-    await ctx.send(f"{game_number} | {category} | {edit_num} | {text}")# TODO ERROR HANDLING
+async def kill(ctx: commands.Context):
+    await ctx.send(":pensive::gun:")
+    await bot.change_presence(status=Status.offline)
+    await bot.logout()
 
-@edit.error
-async def edit_error(ctx, error):
-    console.log(error)
+
+@bot.check(db_access)
+@bot.command()
+async def edit(ctx: commands.Context, game_number: int, category: str, attribute_num: int, *, text: str):
+    with JsonFile(database_location) as games:
+        if not 1 <= game_number <= len(games): # If 2 games, be between 1 and 2 incl.
+            raise BadArgument("game_number is not a number.")
+    await ctx.send(f"{game_number} | {category} | {attribute_num} | {text}")  # TODO ERROR HANDLING
 
 
 @bot.check(db_access)
