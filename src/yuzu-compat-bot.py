@@ -180,6 +180,7 @@ async def edit(ctx: commands.Context, game_number: int, category: str, attribute
 
 
 async def log(message: str):
+    # TODO GLOBAL: Fix logging so that it logs who made what change.
     for x in log_channels:
         await x.send(message)
 
