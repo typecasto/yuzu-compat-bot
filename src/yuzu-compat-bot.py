@@ -152,9 +152,36 @@ async def kill(ctx: commands.Context):
 @bot.command()
 async def edit(ctx: commands.Context, game_number: int, category: str, attribute_num: int, *, text: str):
     with JsonFile(database_location) as games:
-        if not 1 <= game_number <= len(games): # If 2 games, be between 1 and 2 incl.
-            raise BadArgument("game_number is not a number.")
-    await ctx.send(f"{game_number} | {category} | {attribute_num} | {text}")  # TODO ERROR HANDLING
+        if not 1 <= game_number <= len(games):  # If 2 games, be between 1 and 2 incl.
+            raise BadArgument(f"game_number must be between 1 and {len(games)} inclusive.")
+        if category not in ["functional", "broken", "crashes", "recommendedsettings", "notes"]:
+            raise BadArgument('category must be one of ["functional","broken","crashes","recommendedsettings","notes"]')
+        if not 1 <= attribute_num <= len(games[game_number-1][category])+1:  # if 3 attributes, must be between 1 and 4
+            raise BadArgument(f"attribute_num must be between 1 and {len(games[game_number-1][category])+1} inclusive.")
+            # TODO Show present attributes and a +1 for add new one.
+        if not text:
+            raise BadArgument("text is a required parameter. If you intended to delete the attribute, use \"delete\".")
+        if attribute_num == len(games[game_number-1][category])+1 and text == "delete":
+            raise BadArgument("You cannot simultaneously create and delete an attribute.")
+        # Add attrib
+        if attribute_num == len(games[game_number-1][category])+1:
+            games[game_number-1][category].append(text)
+            log(f"```diff\nAttribute added in {games[game_number-1]['name']}:\n+ {text}")
+        # Remove attrib
+        elif text.lower() == "delete":
+            oldtext = games[game_number-1][category][attribute_num-1]
+            games[game_number-1][category].pop(attribute_num-1)
+            log(f"```diff\nAttribute removed in {games[game_number-1]['name']}:\n- {oldtext}")
+        # Update attrib
+        else:
+            oldtext = games[game_number-1][category][attribute_num-1]
+            games[game_number-1][category][attribute_num-1] = text
+            log(f"```diff\nAttribute updated in {games[game_number-1]['name']}:\n- {oldtext}\n+ {text}")
+
+
+async def log(message: str):
+    for x in log_channels:
+        await x.send(message)
 
 
 @bot.check(db_access)
@@ -170,6 +197,7 @@ async def add_game(ctx: commands.Context, gamename: str):
             "notes": [],
         })
     console.log(f"Added game {gamename}", style="blue")
+    log(f"```diff\nAdded game:\n+{gamename}")
     await sync(ctx)
 
 # Checks the channels and makes any needed adjustments.
@@ -232,7 +260,7 @@ async def sync(ctx: commands.Context):
                 if len(messages) < len(games):
                     for _ in range(len(games) - len(messages)):
                         messages.append(await channel.send(
-                            "```diff\n- Placeholder. Please hold. If this persists for 10 minutes, ping typecasto#0517.\n```"))
+                            "```diff\n- Placeholder. Please hold. If this persists for 2 minutes, ping typecasto#0517.\n```"))
                 # Just to be sure, let's make sure the lengths are equal.
                 if len(messages) != len(games):
                     repair(ctx, channel)
