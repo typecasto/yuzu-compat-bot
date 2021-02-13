@@ -184,7 +184,12 @@ async def on_command_error(ctx: commands.Context, error):
 
 @commands.check(db_access)
 @commands.is_owner()
-@bot.command()
+@bot.command(brief="what a shame",
+             help=multiline("""
+    what a shame, he was a good man
+
+    what a rotten way to die
+    """))
 async def kill(ctx: commands.Context):
     await ctx.send(":pensive::gun:")
     await bot.change_presence(status=Status.offline)
@@ -193,7 +198,18 @@ async def kill(ctx: commands.Context):
 
 @commands.check(valid_user_check)
 @commands.check(db_access)
-@bot.command()
+@bot.command(brief="Adds, edits, or deletes attributes",
+             help=multiline("""
+    Edits the attributes of a game.
+
+    <game_number> is the number of the game, as shown in the list channel.
+    <category> must be "functional", "broken", "crashes", "recommendedsettings", or "notes".
+    <attribute_num> is the number next to the attribute you want to edit.
+        To add an attribute, use the number one higher than the highest one.
+    <text> is the text you want the attribute to be set to, or "delete" to remove the attribute.
+
+    This action is logged.
+    """))
 async def edit(ctx: commands.Context, game_number: int, category: str, attribute_num: int, *, text: str):
     with JsonFile(database_location) as games:
         if not 1 <= game_number <= len(games):  # If 2 games, be between 1 and 2 incl.
@@ -237,6 +253,8 @@ async def log(message: str):
              help=multiline("""
     Creates a game named <gamename> and adds it to the list (and then syncs the list).
     To add attributes, use >edit. 
+    
+    This action is logged.
     """))
 async def add_game(ctx: commands.Context, gamename: str):
     with JsonFile(database_location) as games:
