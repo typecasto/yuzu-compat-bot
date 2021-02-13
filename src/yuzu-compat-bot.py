@@ -5,7 +5,7 @@ from discord.enums import Status
 from discord.ext import commands
 import discord
 from discord.ext.commands.cooldowns import BucketType
-from discord.ext.commands.errors import BadArgument, CommandNotFound, MissingRequiredArgument
+from discord.ext.commands.errors import BadArgument, CheckFailure, CommandInvokeError, CommandNotFound, MissingRequiredArgument, NotOwner, TooManyArguments
 from rich import traceback, inspect
 from rich.console import Console
 from inspect import cleandoc as multiline
@@ -74,6 +74,7 @@ def convert_game_dict_to_message(game: dict, number: int):
     message += f"{settings}\n"
     message += f"# Notes\n"
     message += f"{notes}"
+    message += f"```"
     return message
 
 # Custom context manager to open a json file for writing
@@ -99,6 +100,10 @@ class JsonFile:
 
 def db_access(ctx):
     return not db_lock
+
+
+def valid_user_check(ctx: commands.Context):
+    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]  # Shoot me a DM, why not?
 
 
 @bot.event
@@ -132,8 +137,36 @@ async def on_command_error(ctx: commands.Context, error):
         message += f"Parameter: `{error.param}`\n"
         message += f"Raw error: `{error}`"
         await ctx.send(message)
-    if type(error) == CommandNotFound:
+    elif type(error) == TooManyArguments:
+        error: TooManyArguments
+        message = "You've got too many arguments.\n"
+        message += f"Run `>help {ctx.command.name}` for more details on command usage.\n\n"
+        message += "More information:\n"
+        message += f"Raw error: `{error}`"
+        await ctx.send(message)
+    elif type(error) == NotOwner:
+        error: NotOwner
+        message = "That command is only available for @typecasto#0517.\n"
+        message += f"Run `>help {ctx.command.name}` for more details on command usage.\n\n"
+        message += "More information:\n"
+        message += f"Raw error: `{error}`"
+        await ctx.send(message)
+    elif type(error) == CommandNotFound:
         await ctx.message.add_reaction("❓")
+    elif type(error) == BadArgument:
+        error: BadArgument
+        message = "One of your arguments was incorrect.\n"
+        message += f"Run `>help {ctx.command.name}` for more details on command usage.\n\n"
+        message += "More information:\n"
+        message += f"Raw error: `{error}`"
+        await ctx.send(message)
+    elif type(error) == CheckFailure:
+        error: CheckFailure
+        message = "Either the database is in use, or you don't have access to this command.\n"
+        message += f"Run `>help to see which commands you can use.\n\n"
+        message += "More information:\n"
+        message += f"Raw error: `{error}`"
+        await ctx.send(message)
     else:
         message = "An error occurred.\n"
         message += f"Run `>help` for instructions.\n\n"
@@ -149,7 +182,8 @@ async def on_command_error(ctx: commands.Context, error):
         # console.log(user)
 
 
-@bot.check(db_access)
+@commands.check(db_access)
+@commands.is_owner()
 @bot.command()
 async def kill(ctx: commands.Context):
     await ctx.send(":pensive::gun:")
@@ -157,7 +191,8 @@ async def kill(ctx: commands.Context):
     await bot.logout()
 
 
-@bot.check(db_access)
+@commands.check(valid_user_check)
+@commands.check(db_access)
 @bot.command()
 async def edit(ctx: commands.Context, game_number: int, category: str, attribute_num: int, *, text: str):
     with JsonFile(database_location) as games:
@@ -196,8 +231,13 @@ async def log(message: str):
         await x.send(message)
 
 
-@bot.check(db_access)
-@bot.command()
+@commands.check(valid_user_check)
+@commands.check(db_access)
+@bot.command(brief="Adds a blank game to the list",
+             help=multiline("""
+    Creates a game named <gamename> and adds it to the list (and then syncs the list).
+    To add attributes, use >edit. 
+    """))
 async def add_game(ctx: commands.Context, gamename: str):
     with JsonFile(database_location) as games:
         games.append({
@@ -214,7 +254,12 @@ async def add_game(ctx: commands.Context, gamename: str):
     await ctx.message.add_reaction("👍")
 
 
-@bot.command()
+@bot.command(brief="Removes bot DMs",
+             help=multiline("""
+    This will delete any DMs from the bot to you.
+    This is mostly here for testing, but there's no reason not to keep it around. 
+    You shouldn't get any DMs from the bot, unless you're posting in the wrong channels, but either way.
+    """))
 async def clear_dm(ctx: commands.Context):
     messages = await ctx.author.create_dm()
     messages = await messages.history(limit=None).flatten()
@@ -226,8 +271,9 @@ async def clear_dm(ctx: commands.Context):
 
 
 @commands.max_concurrency(1, per=BucketType.default)
+@commands.check(valid_user_check)
 @commands.check(db_access)
-@bot.command(brief="Updates all compatibility lists, trying to do the least work.",
+@bot.command(brief="Updates all compatibility lists, trying to do the least work",
              help=multiline("""
     Validates the list of games in every server, and updates them accordingly.
     If non-bot messages are present, deletes them and reprimands the author via DM.
@@ -294,18 +340,22 @@ async def sync(ctx: commands.Context):
                         await message.edit(content=game_message)
 
 
-@bot.command()
-async def test(ctx: commands.Context):
-    with JsonFile(database_location, "r") as games:
-        pass
-
-
+@commands.check(valid_user_check)
 @commands.check(db_access)
-@bot.command()
+@bot.command(brief="Fully destroys the list in a given channel and remakes it",
+             help=multiline(f"""
+    Deletes every message in <channel> and recreates the list completely.
+    Depending on the number of games, this can be time consuming.
+    Avoid using this command unless the list of games is completely borked.
+    Use >sync instead.
+
+    Can also be used to add a new list channel, since we don't check for those after the bot is started.
+    """))
 async def repair(ctx: commands.Context, channel: discord.TextChannel):
     if "<yuzu-compat: list>" not in channel.topic:
-        ctx.send("Failed. Channel is not a valid list channel.")
-        return
+        raise BadArgument(f"{channel} is not a valid list channel.")
+    elif channel not in list_channels:
+        list_channels.append(channel)
     console.log(f"Repairing <{channel.name}> in <{channel.guild.name}>.", style="red bold")
     messages = await channel.history(oldest_first=True, limit=None).flatten()
     with channel.typing() as _:
@@ -319,18 +369,15 @@ async def repair(ctx: commands.Context, channel: discord.TextChannel):
 
 @commands.check(db_access)
 @commands.is_owner()
-async def backup(ctx):
-    pass
+@bot.command(brief="Sends a copy of games.json to the current channel")
+async def backup(ctx: commands.Context):
+    jsonfile = discord.File("games.json","games.json")
+    await ctx.send(file=jsonfile)
 
 
-@bot.check
-def author_or_roleid_check(ctx: commands.Context):
-    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]  # Shoot me a DM, why not?
-
-
-@bot.check
-def bot_commands_channel_only(ctx: commands.Context):
-    return (type(ctx.channel) == discord.DMChannel) or (len(ctx.channel.topic) > 1 and "<yuzu-compat: commands>" in ctx.channel.topic)
+# @bot.check
+# def bot_commands_channel_only(ctx: commands.Context):
+#     return (type(ctx.channel) == discord.DMChannel) or (len(ctx.channel.topic) > 1 and "<yuzu-compat: commands>" in ctx.channel.topic)
 
 
 # Extract the token from the file, trim a trailing newline, and start the bot.
