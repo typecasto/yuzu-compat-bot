@@ -61,19 +61,19 @@ def convert_game_dict_to_message(game: dict, number: int):
     if not found:
         notes += "* None\n"
 
-    message = f"""```markdown
-[{number:03}]: {game['name']}
-
-# Functional
-{functional}
-# Broken
-{broken}
-# Crashes
-{crashes}
-# Recommended Settings
-{settings}
-# Notes
-{notes}```"""
+    message = "```markdown\n"
+    message += f"[{number:03}]: {game['name']}\n"
+    message += f"\n"
+    message += f"# Functional\n"
+    message += f"{functional}\n"
+    message += f"# Broken\n"
+    message += f"{broken}\n"
+    message += f"# Crashes\n"
+    message += f"{crashes}\n"
+    message += f"# Recommended Settings\n"
+    message += f"{settings}\n"
+    message += f"# Notes\n"
+    message += f"{notes}"
     return message
 
 # Custom context manager to open a json file for writing
