@@ -1,10 +1,11 @@
 import json
-from typing import Optional
+from discord.channel import DMChannel
+# from typing import Optional
 from discord.enums import Status
 from discord.ext import commands
 import discord
 from discord.ext.commands.cooldowns import BucketType
-from discord.ext.commands.errors import BadArgument, MissingRequiredArgument
+from discord.ext.commands.errors import BadArgument, CommandNotFound, MissingRequiredArgument
 from rich import traceback, inspect
 from rich.console import Console
 from inspect import cleandoc as multiline
@@ -16,7 +17,7 @@ database_location = "games.json"
 bot = commands.Bot(command_prefix=">")
 list_channels: list[discord.TextChannel] = []
 log_channels: list[discord.TextChannel] = []
-db_lock: bool = False  # To prevent async race conditions from ocurring.
+db_lock: bool = False  # To prevent the funny race conditions from ocurring.
 
 
 def convert_game_dict_to_message(game: dict, number: int):
@@ -131,6 +132,8 @@ async def on_command_error(ctx: commands.Context, error):
         message += f"Parameter: `{error.param}`\n"
         message += f"Raw error: `{error}`"
         await ctx.send(message)
+    if type(error) == CommandNotFound:
+        await ctx.message.add_reaction("❓")
     else:
         message = "An error occurred.\n"
         message += f"Run `>help` for instructions.\n\n"
@@ -138,6 +141,12 @@ async def on_command_error(ctx: commands.Context, error):
         message += f"Error type: `{type(error)}`\n"
         message += f"Raw error: `{error}`"
         await ctx.send(message)
+        message += f"\nhttp://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}\n"
+        message += f"Original message by {ctx.author}:\n"
+        message += ctx.message.content
+        owner = await bot.fetch_user(bot.owner_id)
+        await owner.send(message)
+        # console.log(user)
 
 
 @bot.check(db_access)
@@ -166,17 +175,19 @@ async def edit(ctx: commands.Context, game_number: int, category: str, attribute
         # Add attrib
         if attribute_num == len(games[game_number-1][category])+1:
             games[game_number-1][category].append(text)
-            log(f"```diff\nAttribute added in {games[game_number-1]['name']}:\n+ {text}")
+            await log(f"```diff\nAttribute in \"{category}\" added for {games[game_number-1]['name']}:\n+ {text}\n@{ctx.author}\n```")
         # Remove attrib
         elif text.lower() == "delete":
             oldtext = games[game_number-1][category][attribute_num-1]
             games[game_number-1][category].pop(attribute_num-1)
-            log(f"```diff\nAttribute removed in {games[game_number-1]['name']}:\n- {oldtext}")
+            await log(f"```diff\nAttribute in \"{category}\" removed for {games[game_number-1]['name']}:\n- {oldtext}\n@{ctx.author}\n```")
         # Update attrib
         else:
             oldtext = games[game_number-1][category][attribute_num-1]
             games[game_number-1][category][attribute_num-1] = text
-            log(f"```diff\nAttribute updated in {games[game_number-1]['name']}:\n- {oldtext}\n+ {text}")
+            await log(f"```diff\nAttribute in \"{category}\" updated for {games[game_number-1]['name']}:\n- {oldtext}\n+ {text}\n@{ctx.author}\n```")
+        await sync(ctx)
+        await ctx.message.add_reaction("👍")
 
 
 async def log(message: str):
@@ -198,10 +209,20 @@ async def add_game(ctx: commands.Context, gamename: str):
             "notes": [],
         })
     console.log(f"Added game {gamename}", style="blue")
-    log(f"```diff\nAdded game:\n+{gamename}")
+    await log(f"```diff\nAdded game:\n+{gamename}\n@{ctx.author}\n```")
     await sync(ctx)
+    await ctx.message.add_reaction("👍")
 
-# Checks the channels and makes any needed adjustments.
+
+@bot.command()
+async def clear_dm(ctx: commands.Context):
+    messages = await ctx.author.create_dm()
+    messages = await messages.history(limit=None).flatten()
+    for x in messages:
+        x: discord.Message
+        if x.author == bot.user:
+            await x.delete()
+    await ctx.message.add_reaction("👍")
 
 
 @commands.max_concurrency(1, per=BucketType.default)
@@ -265,20 +286,18 @@ async def sync(ctx: commands.Context):
                 # Just to be sure, let's make sure the lengths are equal.
                 if len(messages) != len(games):
                     repair(ctx, channel)
+                    return
 
                 for num, message in enumerate(messages):
                     game_message = convert_game_dict_to_message(games[num], num+1)
                     if message.content != game_message:
                         await message.edit(content=game_message)
 
-                print(len(messages))
-
 
 @bot.command()
 async def test(ctx: commands.Context):
     with JsonFile(database_location, "r") as games:
-        for i, x in enumerate(games):
-            await ctx.send(convert_game_dict_to_message(x, i))
+        pass
 
 
 @commands.check(db_access)
@@ -298,9 +317,20 @@ async def repair(ctx: commands.Context, channel: discord.TextChannel):
                 await channel.send(game_message)
 
 
+@commands.check(db_access)
+@commands.is_owner()
+async def backup(ctx):
+    pass
+
+
 @bot.check
-def only_run_author(ctx: commands.Context):
-    return ctx.author.id == 134509976956829697
+def author_or_roleid_check(ctx: commands.Context):
+    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]  # Shoot me a DM, why not?
+
+
+@bot.check
+def bot_commands_channel_only(ctx: commands.Context):
+    return (type(ctx.channel) == discord.DMChannel) or (len(ctx.channel.topic) > 1 and "<yuzu-compat: commands>" in ctx.channel.topic)
 
 
 # Extract the token from the file, trim a trailing newline, and start the bot.
@@ -308,4 +338,5 @@ token = ""
 with open("token", "r") as file:
     token = file.read()
 token.removesuffix("\n")
+bot.owner_id = 134509976956829697
 bot.run(token)
