@@ -105,8 +105,9 @@ def db_access(ctx):
 def valid_user_check(ctx: commands.Context):
     return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]  # Shoot me a DM, why not?
 
+
 async def log(message: str):
-# TODO GLOBAL: Fix logging so that it logs who made what change.
+    # TODO GLOBAL: Fix logging so that it logs who made what change.
     for x in log_channels:
         await x.send(message)
 
@@ -246,6 +247,7 @@ async def edit(ctx: commands.Context, game_number: int, category: str, attribute
         await sync(ctx)
         await ctx.message.add_reaction("👍")
 
+
 @commands.check(valid_user_check)
 @commands.check(db_access)
 @bot.command(brief="Renames a game",
@@ -266,8 +268,6 @@ async def rename(ctx: commands.Context, game_number: int, *, new_name: str):
             await log(f"```diff\nRenamed game:\n- {oldtext}\n+ {new_name}\n@{ctx.author}\n```")
         await sync(ctx)
         await ctx.message.add_reaction("👍")
-
-
 
 
 @commands.check(valid_user_check)
@@ -412,7 +412,7 @@ async def repair(ctx: commands.Context, channel: discord.TextChannel):
 @commands.is_owner()
 @bot.command(brief="Sends a copy of games.json to the current channel")
 async def backup(ctx: commands.Context):
-    jsonfile = discord.File("games.json","games.json")
+    jsonfile = discord.File("games.json", "games.json")
     await ctx.send(file=jsonfile)
 
 
