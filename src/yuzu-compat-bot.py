@@ -240,6 +240,26 @@ async def edit(ctx: commands.Context, game_number: int, category: str, attribute
         await sync(ctx)
         await ctx.message.add_reaction("👍")
 
+@commands.check(valid_user_check)
+@commands.check(db_access)
+@bot.command(brief="Renames a game",
+             help=multiline("""
+    Renames a game, pretty simple. Use the ID number in the compatability list.
+
+    This action is logged.
+    """))
+async def rename(ctx: commands.Context, game_number: int, *, new_name: str):
+    with JsonFile(database_location) as games:
+        if not 1 <= game_number <= len(games):  # If 2 games, be between 1 and 2 incl.
+            raise BadArgument(f"game_number must be between 1 and {len(games)} inclusive.")
+        if not new_name:
+            raise BadArgument("new_name is a required parameter.")
+        else:
+            oldtext = games[game_number-1]["name"]
+            games[game_number-1]["name"] = new_name
+            await log(f"```diff\nRenamed game:\n- {oldtext}\n+ {new_name}\n@{ctx.author}\n```")
+        await sync(ctx)
+        await ctx.message.add_reaction("👍")
 
 async def log(message: str):
     # TODO GLOBAL: Fix logging so that it logs who made what change.
