@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yuzu-compat-bot"
-version = "1.0.0"
+version = "1.1.0"
 description = "A discord bot to maintain a list of games compatible with yuzu."
 authors = ["Larson Ashcroft <larsona@outlook.com>"]
 
