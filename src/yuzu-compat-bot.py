@@ -105,6 +105,11 @@ def db_access(ctx):
 def valid_user_check(ctx: commands.Context):
     return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]  # Shoot me a DM, why not?
 
+async def log(message: str):
+# TODO GLOBAL: Fix logging so that it logs who made what change.
+    for x in log_channels:
+        await x.send(message)
+
 
 @bot.event
 async def on_ready():
@@ -206,6 +211,7 @@ async def kill(ctx: commands.Context):
     <category> must be "functional", "broken", "crashes", "recommendedsettings", or "notes".
     <attribute_num> is the number next to the attribute you want to edit.
         To add an attribute, use the number one higher than the highest one.
+        If there are no attributes, use 1.
     <text> is the text you want the attribute to be set to, or "delete" to remove the attribute.
 
     This action is logged.
@@ -261,10 +267,7 @@ async def rename(ctx: commands.Context, game_number: int, *, new_name: str):
         await sync(ctx)
         await ctx.message.add_reaction("👍")
 
-async def log(message: str):
-    # TODO GLOBAL: Fix logging so that it logs who made what change.
-    for x in log_channels:
-        await x.send(message)
+
 
 
 @commands.check(valid_user_check)
