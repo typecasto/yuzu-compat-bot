@@ -266,8 +266,8 @@ async def rename(ctx: commands.Context, game_number: int, *, new_name: str):
             oldtext = games[game_number-1]["name"]
             games[game_number-1]["name"] = new_name
             await log(f"```diff\nRenamed game:\n- {oldtext}\n+ {new_name}\n@{ctx.author}\n```")
-        await sync(ctx)
-        await ctx.message.add_reaction("👍")
+    await sync(ctx)
+    await ctx.message.add_reaction("👍")
 
 
 @commands.check(valid_user_check)
