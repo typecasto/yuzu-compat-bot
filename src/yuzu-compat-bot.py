@@ -169,7 +169,7 @@ async def on_command_error(ctx: commands.Context, error):
     elif type(error) == CheckFailure:
         error: CheckFailure
         message = "Either the database is in use, or you don't have access to this command.\n"
-        message += f"Run `>help to see which commands you can use.\n\n"
+        message += f"Run `>help` to see which commands you can use.\n\n"
         message += "More information:\n"
         message += f"Raw error: `{error}`"
         await ctx.send(message)
