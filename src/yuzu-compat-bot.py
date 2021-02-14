@@ -279,7 +279,7 @@ async def rename(ctx: commands.Context, game_number: int, *, new_name: str):
     
     This action is logged.
     """))
-async def add_game(ctx: commands.Context, gamename: str):
+async def add_game(ctx: commands.Context, *, gamename: str):
     with JsonFile(database_location) as games:
         games.append({
             "name": gamename,
