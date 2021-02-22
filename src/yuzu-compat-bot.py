@@ -380,6 +380,7 @@ async def sync(ctx: commands.Context):
                     game_message = convert_game_dict_to_message(games[num], num+1)
                     if message.content != game_message:
                         await message.edit(content=game_message)
+    console.log("Done.",style="green")
 
 
 @commands.check(valid_user_check)
