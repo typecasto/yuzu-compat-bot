@@ -244,6 +244,7 @@ async def edit(ctx: commands.Context, game_number: int, category: str, attribute
             oldtext = games[game_number-1][category][attribute_num-1]
             games[game_number-1][category][attribute_num-1] = text
             await log(f"```diff\nAttribute in \"{category}\" updated for {games[game_number-1]['name']}:\n- {oldtext}\n+ {text}\n@{ctx.author}\n```")
+    console.log(f"Attribute modified: [green]{category}:{attribute_num}[/green] for [green]{games[game_number-1]}[/green].", style="blue")
     await sync(ctx)
     await ctx.message.add_reaction("👍")
 
@@ -289,7 +290,7 @@ async def add_game(ctx: commands.Context, *, gamename: str):
             "recommendedsettings": [],
             "notes": [],
         })
-    console.log(f"Added game {gamename}", style="blue")
+    console.log(f"Added game [green]{gamename}[\green]", style="blue")
     await log(f"```diff\nAdded game:\n+{gamename}\n@{ctx.author}\n```")
     await sync(ctx)
     await ctx.message.add_reaction("👍")
@@ -421,7 +422,7 @@ async def backup(ctx: commands.Context):
 #     return (type(ctx.channel) == discord.DMChannel) or (len(ctx.channel.topic) > 1 and "<yuzu-compat: commands>" in ctx.channel.topic)
 
 
-# Extract the token from the file, trim a trailing newline, and start the bot.
+# Extract the token from the file, trim a trailing newline, and get this shit rolling.
 token = ""
 with open("token", "r") as file:
     token = file.read()
