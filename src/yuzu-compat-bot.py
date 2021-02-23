@@ -202,6 +202,23 @@ async def kill(ctx: commands.Context):
     await bot.logout()
 
 
+@commands.is_owner()
+@bot.command(name="eval",
+             brief="oh god",
+             help=multiline("""
+    oh fuck,
+    oh jeez,
+    oh god oh fuck,
+    oh no oh fuck oh godf ohg od o h fuck
+    """))
+async def eval_stuff(ctx: commands.Context, *, code: str):
+    try:
+        return_message = str(eval(code))
+    except Exception as e:
+        return_message = str(e)
+    ctx.send(return_message)
+
+
 @commands.check(valid_user_check)
 @commands.check(db_access)
 @bot.command(brief="Adds, edits, or deletes attributes",
@@ -380,7 +397,7 @@ async def sync(ctx: commands.Context):
                     game_message = convert_game_dict_to_message(games[num], num+1)
                     if message.content != game_message:
                         await message.edit(content=game_message)
-    console.log("Done.",style="green")
+    console.log("Done.", style="green")
 
 
 @commands.check(valid_user_check)
