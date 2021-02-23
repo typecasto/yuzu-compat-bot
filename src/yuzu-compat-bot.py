@@ -261,7 +261,7 @@ async def edit(ctx: commands.Context, game_number: int, category: str, attribute
             oldtext = games[game_number-1][category][attribute_num-1]
             games[game_number-1][category][attribute_num-1] = text
             await log(f"```diff\nAttribute in \"{category}\" updated for {games[game_number-1]['name']}:\n- {oldtext}\n+ {text}\n@{ctx.author}\n```")
-    console.log(f"Attribute modified: {category}:{attribute_num} for {games[game_number-1]['name']}.", style="blue")
+    console.log(f"Attribute modified: [green]{category}:{attribute_num}[\green] for [green]{games[game_number-1]['name']}[\green].", style="blue")
     await sync(ctx)
     await ctx.message.add_reaction("👍")
 
@@ -307,7 +307,7 @@ async def add_game(ctx: commands.Context, *, gamename: str):
             "recommendedsettings": [],
             "notes": [],
         })
-    console.log(f"Added game {gamename}.", style="blue")
+    console.log(f"Added game [green]{gamename}[\green]", style="blue")
     await log(f"```diff\nAdded game:\n+{gamename}\n@{ctx.author}\n```")
     await sync(ctx)
     await ctx.message.add_reaction("👍")
