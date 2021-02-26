@@ -351,7 +351,7 @@ async def sync(ctx: commands.Context):
     with JsonFile(database_location) as games:
         # Sort the list of games
         games: list
-        games.sort(key=lambda game: game["name"])
+        games.sort(key=lambda game: game["name"].casefold())
         # console.log(games)
     with JsonFile(database_location, "r") as games:
         for channel in list_channels:
