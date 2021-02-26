@@ -313,7 +313,7 @@ async def add_game(ctx: commands.Context, *, gamename: str):
     await log(f"```diff\nAdded game:\n+{gamename}\n@{ctx.author}\n```")
     await sync(ctx)
     with JsonFile(database_location) as games:
-        await ctx.send(f"Added game {games.index(new_game)}.")
+        await ctx.send(f"Added game {games.index(new_game)+1}.")
 
 
 @bot.command(brief="Removes bot DMs",
