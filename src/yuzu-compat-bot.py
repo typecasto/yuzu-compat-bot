@@ -5,7 +5,8 @@ from discord.enums import Status
 from discord.ext import commands
 import discord
 from discord.ext.commands.cooldowns import BucketType
-from discord.ext.commands.errors import BadArgument, CheckFailure, CommandInvokeError, CommandNotFound, MissingRequiredArgument, NotOwner, TooManyArguments
+from discord.ext.commands.errors import BadArgument, CheckFailure, CommandNotFound
+from discord.ext.commands.errors import MissingRequiredArgument, NotOwner, TooManyArguments
 from rich import traceback, inspect
 from rich.console import Console
 from inspect import cleandoc as multiline
