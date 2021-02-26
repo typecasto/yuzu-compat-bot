@@ -299,19 +299,21 @@ async def rename(ctx: commands.Context, game_number: int, *, new_name: str):
     This action is logged.
     """))
 async def add_game(ctx: commands.Context, *, gamename: str):
+    new_game = {
+        "name": gamename,
+        "functional": [],
+        "broken": [],
+        "crashes": [],
+        "recommendedsettings": [],
+        "notes": [],
+    }
     with JsonFile(database_location) as games:
-        games.append({
-            "name": gamename,
-            "functional": [],
-            "broken": [],
-            "crashes": [],
-            "recommendedsettings": [],
-            "notes": [],
-        })
-    console.log(f"Added game [green]{gamename}[\green]", style="blue")
+        games.append(new_game)
+    console.log(f"Added game [green]{gamename}[/green]", style="blue")
     await log(f"```diff\nAdded game:\n+{gamename}\n@{ctx.author}\n```")
     await sync(ctx)
-    await ctx.message.add_reaction("👍")
+    with JsonFile(database_location) as games:
+        await ctx.send(f"Added game {games.index(new_game)}.")
 
 
 @bot.command(brief="Removes bot DMs",
