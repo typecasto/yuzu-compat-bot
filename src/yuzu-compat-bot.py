@@ -205,7 +205,7 @@ async def decode(ctx: commands.Context, *, code: str):
     try:
         while len(code) % 4 != 0: # Fine, I'll do it myself.
             code += "="
-        await ctx.author.send(f"Decoded text: {str(base64.b64decode(code, validate=True), encoding='utf8')[2:-1]}") # the slice is to remove the b''
+        await ctx.author.send(f"Decoded text: {str(base64.b64decode(code, validate=True), encoding='utf8')}") # the slice is to remove the b''
     except BinAsciiError:
         await ctx.send("Not a valid base64 encoded string.")
 
