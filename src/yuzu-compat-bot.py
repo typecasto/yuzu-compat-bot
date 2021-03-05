@@ -234,6 +234,7 @@ async def encode(ctx: commands.Context, *, text: str):
 async def kill(ctx: commands.Context):
     await ctx.send(":pensive::gun:")
     await bot.change_presence(status=Status.offline)
+    console.log("Goodbye, world",style="red")
     await bot.logout()
 
 
