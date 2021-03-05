@@ -10,6 +10,8 @@ from discord.ext.commands.errors import MissingRequiredArgument, NotOwner, TooMa
 from rich import traceback, inspect
 from rich.console import Console
 from inspect import cleandoc as multiline
+from binascii import Error as BinAsciiError
+import base64
 
 console = Console()
 # traceback.install(console=console, extra_lines=5, word_wrap=True, show_locals=True)
@@ -188,6 +190,34 @@ async def on_command_error(ctx: commands.Context, error):
         await owner.send(message)
         # console.log(user)
 
+
+############################
+#         COMMANDS         #
+############################
+
+@bot.command(brief="Decodes base64",
+             aliases=["d"],
+             help=multiline("""
+    Decodes a base64 encoded string.
+    Fairly simple, may be improved in the future with new features.
+    """))
+async def decode(ctx: commands.Context, *, code: str):
+    try:
+        await ctx.author.send(f"Decoded text: {base64.b64decode(code)}")
+    except BinAsciiError:
+        await ctx.send("Not a valid base64 encoded string.")
+
+@bot.command(brief="Encodes base64",
+             aliases=["e"],
+             help=multiline("""
+    Encodes a string into base64.
+    This command deletes the message that invoked it.
+
+    Fairly simple, may be improved in the future with new features.
+    """))
+async def encode(ctx: commands.Context, *, text: str):
+    await ctx.send(f"<@{ctx.author.id}>: {base64.b64encode(text)}")
+    await ctx.message.delete()
 
 @commands.check(db_access)
 @commands.is_owner()
