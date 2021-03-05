@@ -204,8 +204,8 @@ async def on_command_error(ctx: commands.Context, error):
 async def decode(ctx: commands.Context, *, code: str):
     try:
         while len(code) % 4 != 0: # Fine, I'll do it myself.
-            code.append("=")
-        await ctx.author.send(f"Decoded text: {str(base64.b64decode(code))[2:-1]}") # the slice is to remove the b''
+            code += "="
+        await ctx.author.send(f"Decoded text: {str(base64.b64decode(code, validate=True))[2:-1]}") # the slice is to remove the b''
     except BinAsciiError:
         await ctx.send("Not a valid base64 encoded string.")
 
@@ -219,7 +219,7 @@ async def decode(ctx: commands.Context, *, code: str):
     """))
 async def encode(ctx: commands.Context, *, text: str):
     try:
-        await ctx.send(f"<@{ctx.author.id}>: {str(base64.b64encode(bytes(text, encoding='utf8')))[2:-1]}")
+        await ctx.send(f"<@{ctx.author.id}>: {str(base64.b64encode(bytes(text, encoding='utf8')))[2:-1]}") # again, slice to remove b''
     finally: # not sure if this is the right place to use a finally, but it seems right?
         await ctx.message.delete()
 
