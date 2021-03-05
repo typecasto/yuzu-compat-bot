@@ -219,7 +219,7 @@ async def decode(ctx: commands.Context, *, code: str):
     """))
 async def encode(ctx: commands.Context, *, text: str):
     try:
-        await ctx.send(f"<@{ctx.author.id}>: {base64.b64encode(bytes(text, encoding='utf8'))}")
+        await ctx.send(f"<@{ctx.author.id}>: {str(base64.b64encode(bytes(text, encoding='utf8')))[2:-1]}")
     finally: # not sure if this is the right place to use a finally, but it seems right?
         await ctx.message.delete()
 
