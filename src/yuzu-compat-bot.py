@@ -117,6 +117,10 @@ async def log(message: str):
 
 @bot.event
 async def on_ready():
+    # Empty the channels here, so that on dropped connection we don't dupe logs and do extra work on sync events
+    list_channels: list[discord.TextChannel] = []
+    log_channels: list[discord.TextChannel] = []
+    # Add each channel to the list of list/log channels
     for c_guild in bot.guilds:
         for c_channel in c_guild.text_channels:
             c_channel: discord.TextChannel
@@ -203,12 +207,13 @@ async def on_command_error(ctx: commands.Context, error):
     """))
 async def decode(ctx: commands.Context, *, code: str):
     try:
-        while len(code) % 4 != 0: # Fine, I'll do it myself.
+        while len(code) % 4 != 0:  # Fine, I'll do it myself.
             code += "="
-        await ctx.author.send(f"Decoded text: {str(base64.b64decode(code, validate=True), encoding='utf8')}") # the slice is to remove the b''
+        await ctx.author.send(f"Decoded text: {str(base64.b64decode(code, validate=True), encoding='utf8')}")  # the slice is to remove the b''
         await ctx.send("Done, check your dms.")
     except BinAsciiError:
         await ctx.send("Not a valid base64 encoded string.")
+
 
 @bot.command(brief="Encodes base64",
              aliases=["e"],
@@ -220,9 +225,10 @@ async def decode(ctx: commands.Context, *, code: str):
     """))
 async def encode(ctx: commands.Context, *, text: str):
     try:
-        await ctx.send(f"<@{ctx.author.id}>: {str(base64.b64encode(bytes(text, encoding='utf8')))[2:-1]}") # again, slice to remove b''
-    finally: # not sure if this is the right place to use a finally, but it seems right?
+        await ctx.send(f"<@{ctx.author.id}>: {str(base64.b64encode(bytes(text, encoding='utf8')))[2:-1]}")  # again, slice to remove b''
+    finally:  # not sure if this is the right place to use a finally, but it seems right?
         await ctx.message.delete()
+
 
 @commands.check(db_access)
 @commands.is_owner()
@@ -235,7 +241,7 @@ async def encode(ctx: commands.Context, *, text: str):
 async def kill(ctx: commands.Context):
     await ctx.send(":pensive::gun:")
     await bot.change_presence(status=Status.offline)
-    console.log("Goodbye, world",style="red")
+    console.log("Goodbye, world", style="red")
     await bot.logout()
 
 
