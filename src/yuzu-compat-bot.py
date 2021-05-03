@@ -117,8 +117,8 @@ async def log(message: str):
 @bot.event
 async def on_ready():
     # Empty the channels here, so that on dropped connection we don't dupe logs and do extra work on sync events
-    list_channels = []
-    log_channels = []
+    list_channels.clear()
+    log_channels.clear()
     # Add each channel to the list of list/log channels
     for c_guild in bot.guilds:
         for c_channel in c_guild.text_channels:
