@@ -142,3 +142,4 @@ poetry.lock
 games.json
 yuzu-compat-bot.code-workspace
 .vscode/settings.json
+tempSrc/temporary.py

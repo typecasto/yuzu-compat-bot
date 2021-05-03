@@ -1,5 +1,4 @@
 import json
-from discord.channel import DMChannel
 # from typing import Optional
 from discord.enums import Status
 from discord.ext import commands
@@ -7,7 +6,7 @@ import discord
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.errors import BadArgument, CheckFailure, CommandNotFound
 from discord.ext.commands.errors import MissingRequiredArgument, NotOwner, TooManyArguments
-from rich import traceback, inspect
+from rich import traceback
 from rich.console import Console
 from inspect import cleandoc as multiline
 from binascii import Error as BinAsciiError
@@ -118,8 +117,8 @@ async def log(message: str):
 @bot.event
 async def on_ready():
     # Empty the channels here, so that on dropped connection we don't dupe logs and do extra work on sync events
-    list_channels: list[discord.TextChannel] = []
-    log_channels: list[discord.TextChannel] = []
+    list_channels = []
+    log_channels = []
     # Add each channel to the list of list/log channels
     for c_guild in bot.guilds:
         for c_channel in c_guild.text_channels:
