@@ -14,7 +14,7 @@ import base64
 
 console = Console()
 # traceback.install(console=console, extra_lines=5, word_wrap=True, show_locals=True)
-database_location = "games.json"
+database_location = "db/games.json"
 
 bot = commands.Bot(command_prefix=">")
 list_channels: list[discord.TextChannel] = []
@@ -105,7 +105,7 @@ def db_access(ctx):
 
 
 def valid_user_check(ctx: commands.Context):
-    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]  # Shoot me a DM, why not?
+    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles] 
 
 
 async def log(message: str):
