@@ -475,7 +475,7 @@ async def repair(ctx: commands.Context, channel: discord.TextChannel):
 @commands.is_owner()
 @bot.command(brief="Sends a copy of games.json to the current channel")
 async def backup(ctx: commands.Context):
-    jsonfile = discord.File("games.json", "games.json")
+    jsonfile = discord.File(database_location, "games.json")
     await ctx.send(file=jsonfile)
 
 
