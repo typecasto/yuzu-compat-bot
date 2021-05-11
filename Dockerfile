@@ -8,7 +8,6 @@ WORKDIR /app
 COPY . .
 
 # Create the database file, if it doesn't exist.
-RUN mkdir /app/db
 RUN test -f /app/db/games.json || echo "[]" > /app/db/games.json
 
 # Get dependencies, maybe use poetry export in a git action, and install from requirements.txt?????
