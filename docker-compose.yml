@@ -1,0 +1,9 @@
+version: "3.8"
+
+services: 
+    app:
+        image: python:3.9.5-buster
+        working_dir: /app
+        volumes:
+            games:/app/db
+        command: sh -c "python -m pip install "
