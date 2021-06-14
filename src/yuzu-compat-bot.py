@@ -105,7 +105,7 @@ def db_access(ctx):
 
 
 def valid_user_check(ctx: commands.Context):
-    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles] 
+    return ctx.author.id == 134509976956829697 or 809853472316981279 in [x.id for x in ctx.author.roles]
 
 
 async def log(message: str):
@@ -359,9 +359,7 @@ async def add_game(ctx: commands.Context, *, gamename: str):
 
 @bot.command(brief="Removes bot DMs",
              help=multiline("""
-    This will delete any DMs from the bot to you.
-    This is mostly here for testing, but there's no reason not to keep it around. 
-    You shouldn't get any DMs from the bot, unless you're posting in the wrong channels, but either way.
+    This will delete any DMs from the bot to you, like decodes.
     """))
 async def clear_dm(ctx: commands.Context):
     messages = await ctx.author.create_dm()
