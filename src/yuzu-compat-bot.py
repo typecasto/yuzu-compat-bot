@@ -22,7 +22,7 @@ log_channels: list[discord.TextChannel] = []
 db_lock: bool = False  # To prevent the funny race conditions from ocurring.
 
 
-def convert_game_dict_to_message(game: dict, number: int):
+def convert_game_dict_to_message(game: dict, number: int) -> str:
     functional = ""
     found = False
     for i, x in enumerate(game["functional"]):
