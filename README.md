@@ -1,4 +1,5 @@
 # yuzu-compat-bot
+
 A discord bot to maintain a list of compatible yuzu games in a neat format.
 
 ## Running
