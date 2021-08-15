@@ -482,10 +482,11 @@ async def backup(ctx: commands.Context):
 #     return (type(ctx.channel) == discord.DMChannel) or (len(ctx.channel.topic) > 1 and "<yuzu-compat: commands>" in ctx.channel.topic)
 
 
-# Extract the token from the file, trim a trailing newline, and get this shit rolling.
-token = ""
-with open("token", "r") as file:
-    token = file.read()
-token.removesuffix("\n")
-bot.owner_id = 134509976956829697
-bot.run(token)
+# Extract the token from the file, trim a trailing newline, and get going.
+if __name__ == "__main__":
+    token = ""
+    with open("token", "r") as file:
+        token = file.read()
+    token.removesuffix("\n")
+    bot.owner_id = 134509976956829697
+    bot.run(token)
