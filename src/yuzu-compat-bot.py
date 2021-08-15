@@ -486,7 +486,7 @@ async def backup(ctx: commands.Context):
 # Extract the token from the file, trim a trailing newline, and get going.
 if __name__ == "__main__":
     for cog in os.listdir("cogs"):
-        if cog.endswith(".py"):
+        if cog.endswith(".py") and not cog.startswith("_"):
             bot.load_extension(f"cogs.{cog[:-3]}")
 
     token = "" # define it out here so that it doesn't die in the with scope
