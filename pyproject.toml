@@ -6,8 +6,8 @@ authors = ["Larson Ashcroft <larsona@outlook.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-"discord.py" = "^1.6.0"
-rich = "^9.8.2"
+"discord.py" = "^1.7.3"
+rich = "^10.7.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.4"
