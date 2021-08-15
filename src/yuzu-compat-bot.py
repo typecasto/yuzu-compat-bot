@@ -488,6 +488,7 @@ if __name__ == "__main__":
     for cog in os.listdir("cogs"):
         if cog.endswith(".py") and not cog.startswith("_"):
             bot.load_extension(f"cogs.{cog[:-3]}")
+    
 
     token = "" # define it out here so that it doesn't die in the with scope
     with open("token", "r") as file:
